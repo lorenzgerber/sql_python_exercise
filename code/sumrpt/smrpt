@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import pyodbc	
 import sys
 
@@ -13,7 +13,8 @@ query = "SELECT SSN, LName, FName, MInit, COALESCE(SUM(Hours),0) AS Know_Hours F
 # This call produces "fancy" formatted output.
 def process_query():
     cursor1.execute(query)
-    print("Employees and their salaries:")
+    print("|    SSN    |  LName  |  FName  |  MInit  |  Known_hours  |  Unknown_Hrs  |  Overtime  |")
+    print("|-----------|---------|---------|---------|---------------|---------------|------------|")
     n=0
     while 1:
         row = cursor1.fetchone()
@@ -30,11 +31,11 @@ def print_result(r):
         title = titledict[r[3]]
     except:
         title = "?"
-    print("     %s %s %s. %s $%.0f" % (title, r[1], r[2], r[0], r[4]))
+    print("|{:^11r[0]}|{:9r[1]}|{:9r[2]}|{:^9r[3]}|%^15.0f|".format(r))
 
 print("")
 
-connection1 = my_odbc_connect.establish_connection("cmdln")
+connection1 = my_odbc_connect.establish_connection("pwd")
 print("")
 cursor1 = my_odbc_cursor.establish_cursor(connection1)
 print("")
