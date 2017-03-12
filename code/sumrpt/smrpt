@@ -1,0 +1,47 @@
+#!/usr/bin/python
+import pyodbc	
+import sys
+
+# This example program and others re-use the same Python functions many times,
+# so they are loaded from local files.
+import my_odbc_connect
+import my_odbc_cursor
+
+query_old = "SELECT LName, FName, MInit, Sex, Salary FROM Employee"
+query = "SELECT SSN, LName, FName, MInit, COALESCE(SUM(Hours),0) AS Know_Hours FROM Employee LEFT OUTER JOIN Works_On ON (SSN=ESSN) GROUP BY SSN"
+
+# This call produces "fancy" formatted output.
+def process_query():
+    cursor1.execute(query)
+    print("Employees and their salaries:")
+    n=0
+    while 1:
+        row = cursor1.fetchone()
+        if not row:
+            break
+        n = n+1
+        print_result(row)
+    if n==0:
+        print("No tuples matching the given query were found.")
+
+def print_result(r):
+    titledict = {"F":"Ms.", "M":"Mr."}
+    try:
+        title = titledict[r[3]]
+    except:
+        title = "?"
+    print("     %s %s %s. %s $%.0f" % (title, r[1], r[2], r[0], r[4]))
+
+print("")
+
+connection1 = my_odbc_connect.establish_connection("cmdln")
+print("")
+cursor1 = my_odbc_cursor.establish_cursor(connection1)
+print("")
+process_query()
+print("")
+my_odbc_cursor.close_cursor(cursor1)
+print("")
+my_odbc_connect.close_connection(connection1)
+
+
