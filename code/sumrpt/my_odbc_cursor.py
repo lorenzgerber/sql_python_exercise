@@ -10,10 +10,10 @@ if  sys.version_info<(3,0,0):
 
 def establish_cursor(cnxn):
     c = cnxn.cursor()
-    print("Cursor", c, "established.")
+    #print("Cursor", c, "established.")
     return c
 
 def close_cursor(c):
     c.close()
-    print("Cursor", c, "closed.")
+    #print("Cursor", c, "closed.")
 
