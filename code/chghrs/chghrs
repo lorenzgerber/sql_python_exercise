@@ -9,21 +9,38 @@ import my_odbc_cursor
 
 
 def check_input_args():
-    if len(sys.argv) < 6:
-        print('missing command line args')
+    if len(sys.argv) < 7:
+        print('Usage: chghrs <DBNname> <UserID> <pwdarg> <SSN> <PNo> <Hours>')
         sys.exit()
-    if sys.argv[5] == 'NULL':
+    if sys.argv[6] == 'NULL':
         print('you choose NULL')
     try:
-           val = int(sys.argv[5])
+           val = int(sys.argv[6])
     except ValueError:
                   print("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""")
-                  sys.exit()
-    print("will change hours to " + val )
+                  sys.exit()	  
+    if (val < 0 or val > 40):
+        print("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""")
+        sys.exit()
+    
+    try:
+        PNo = int(sys.argv[5])
+    except ValueError:
+            print("Argument <PNo> has to be a number")
+            sys.exit()
+    try:
+        SSN = int(sys.argv[4])
+    except ValueError:
+            print("Argument <SSN> has to be a number")
+            sys.exit()
+            
+    print("will change hours for {} at {} to {}".format(SSN,PNo,val))
+    
+    input = {'SSN': SSN, 'PNo': PNo, 'Hours': val}
+    return input
 
-
-check_input_args()
-
+intput = check_input_args()
+#print("{} {} {}".format(input['SSN'], input['PNo'], input['Hours']))
 print("")
 
 connection1 = my_odbc_connect.establish_connection("cmdln")
