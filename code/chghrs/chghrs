@@ -7,54 +7,95 @@ import sys
 import my_odbc_connect
 import my_odbc_cursor
 
+delete="DELETE FROM Works_On WHERE ESSN=? AND PNo=?;"
+update="UPDATE Works_On SET Hours = ? WHERE ESSN=? AND PNo=?;"
+insert="INSERT INTO Works_On VALUES(?, ?, ?)"
 
 def check_input_args():
     if len(sys.argv) < 7:
-        print('Usage: chghrs <DBNname> <UserID> <pwdarg> <SSN> <PNo> <Hours>')
+        sys.stderr.write('Usage: chghrs <DBNname> <UserID> <pwdarg> <SSN> <PNo> <Hours>\n')
         sys.exit()
     if sys.argv[6] == 'NULL':
-        print('you choose NULL')
-    try:
+        val = sys.argv[6]
+    else:
+        try:
            val = int(sys.argv[6])
-    except ValueError:
-                  print("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""")
+        except ValueError:
+                  sys.stderr.write("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""\n")
                   sys.exit()	  
-    if (val < 0 or val > 40):
-        print("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""")
-        sys.exit()
+        if (val < 0 or val > 40):
+            sys.stderr.write("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""\n")
+            sys.exit()
     
     try:
         PNo = int(sys.argv[5])
     except ValueError:
-            print("Argument <PNo> has to be a number")
+            sys.stderr.write("Argument <PNo> has to be a number\n")
             sys.exit()
     try:
-        SSN = int(sys.argv[4])
+        SSN = sys.argv[4]
     except ValueError:
-            print("Argument <SSN> has to be a number")
+            sys.stderr.write("Argument <SSN> has to be a number\n")
             sys.exit()
             
-    print("will change hours for {} at {} to {}".format(SSN,PNo,val))
     
     input = {'SSN': SSN, 'PNo': PNo, 'Hours': val}
-    return input
 
-intput = check_input_args()
-#print("{} {} {}".format(input['SSN'], input['PNo'], input['Hours']))
-print("")
+    return input;
+    
+def execute_command(input, cursor1):
+    if(input['Hours'] == 0):
+        try:
+            success=cursor1.execute(delete, input['SSN'], input['PNo']).rowcount
+        except (pyodbc.IntegrityError, pyodbc.Error) as e:
+            sys.stderr.write("Could not delete employee {} working on {} for {}Hrs\n".format(input['SSN'], input['PNo']))
+            sys.stderr.write("Giving following exception:  ")
+            sys.stderr.write(str(e))
+            sys.stderr.write("\n")
+        if success != 1:
+            sys.stderr.write("Could not delete employee {} wroking on PNo {}\n".format(input['SSN'],input['PNo']))
+            sys.exit()
+        cursor1.commit()
+        sys.stderr.write("Employee {} working on {} was successfully deleted\n".format(input['SSN'], input['PNo']))
+    else:
+        try:
+            success=cursor1.execute(update, input['Hours'], input['SSN'], input['PNo']).rowcount
+        except (pyodbc.IntegrityError, pyodbc.Error) as e:
+            sys.stderr.write("Could not execute update for employee {} working on {} for {}Hrs\n".format(input['SSN'], input['PNo'], input['Hours']))
+            sys.stderr.write("Giving following exception:  ")
+            sys.stderr.write(str(e))
+            sys.stderr.write("\n")
+        if success != 1:
+            try:
+                successIn=cursor1.execute(insert, input['SSN'], input['PNo'], input['Hours']).rowcount
+            except (pyodbc.IntegrityError, pyodbc.Error) as e:
+                sys.stderr.write("Could not execute insert for employee {} working on {} for {}Hrs\n".format(input['SSN'], input['PNo'], input['Hours']))
+                sys.stderr.write("Giving following exception:  ")
+                sys.stderr.write(str(e))
+                sys.stderr.write("\n")
+                sys.exit()
+            if successIn != 1:
+                sys.stderr.write("Could not insert person {} wroking on PNo {} for {} hours\n".format(input['SSN'], input['PNo'], input['Hours']))
+                sys.exit()
+        cursor1.commit()
+        sys.stderr.write("Number of hours which employee {} works on project {} successfully changed to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
+
+input = check_input_args()
+#print("")
 
 connection1 = my_odbc_connect.establish_connection("cmdln")
-print("")
+#print("")
 cursor1 = my_odbc_cursor.establish_cursor(connection1)
-print("")
+#print("")
 
-check_input_args();
+execute_command(input, cursor1)
+#check_input_args();
 
 
 
-print("")
+#print("")
 my_odbc_cursor.close_cursor(cursor1)
-print("")
+#print("")
 my_odbc_connect.close_connection(connection1)
 
 
