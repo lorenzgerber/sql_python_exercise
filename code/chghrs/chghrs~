@@ -1,0 +1,42 @@
+#!/usr/bin/python3
+import pyodbc	
+import sys
+
+# This example program and others re-use the same Python functions many times,
+# so they are loaded from local files.
+import my_odbc_connect
+import my_odbc_cursor
+
+
+def check_input_args():
+    if len(sys.argv) < 6:
+        print('check input args')
+    if sys.argv[5] == 'NULL':
+        print('you choose NULL')
+    try:
+           val = int(sys.argv[5])
+    except ValueError:
+                  print("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""")
+                  sys.exit()
+    print("will change hours to " + val )
+
+
+check_input_args()
+
+print("")
+
+connection1 = my_odbc_connect.establish_connection("cmdln")
+print("")
+cursor1 = my_odbc_cursor.establish_cursor(connection1)
+print("")
+
+check_input_args();
+
+
+
+print("")
+my_odbc_cursor.close_cursor(cursor1)
+print("")
+my_odbc_connect.close_connection(connection1)
+
+
