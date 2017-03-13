@@ -33,6 +33,7 @@ def check_input_args():
             sys.stderr.write("Argument <PNo> has to be a number\n")
             sys.exit()
     try:
+        test = in(sys.argv[4])
         SSN = sys.argv[4]
     except ValueError:
             sys.stderr.write("Argument <SSN> has to be a number\n")
