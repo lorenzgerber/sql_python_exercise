@@ -10,7 +10,7 @@ import my_odbc_cursor
 
 query_old = "SELECT SSN, LName, FName, MInit, COALESCE(SUM(Hours),0) AS Know_Hours FROM Employee LEFT OUTER JOIN Works_On ON (SSN=ESSN) GROUP BY SSN"
 
-query = "SELECT SSN, LName, FName, MInit, COALESCE(SUM(Hours),0) AS Known_Hours, a.UnCount as temp, IF (a.PNo = 1 , 'yes', 'no') as unknown_hours, CASE WHEN COALESCE(SUM(Hours),0) + IF(a.UnCount IS NULL, 0, a.UnCount) > 40 THEN 'yes' WHEN COALESCE(SUM(Hours),0) + IF(a.UnCount IS NULL, 0, a.UnCount) <= 40 THEN 'no' ELSE '?' END as overtime FROM Employee RIGHT OUTER JOIN Works_On ON (SSN=ESSN) left join (SELECT ESSN, COUNT(PNo) as PNo, count(PNo) * 40 as UnCount FROM Works_On WHERE (NOT(ESSN IN(SELECT ESSN From Works_On WHERE Hours IS NOT NULL))) GROUP BY ESSN, PNo) a on a.ESSN = Employee.SSN GROUP BY SSN"
+query = "SELECT SSN, LName, FName, MInit, COALESCE(SUM(Hours),0) AS Known_Hours, CASE WHEN SUM(CASE WHEN Hours IS NULL THEN 1 ELSE 0 END) > 0 THEN 'Yes' ELSE 'No' END AS unknown_hours, CASE WHEN(SUM(Hours) > 40) THEN 'Yes' WHEN(SUM(CASE WHEN Hours IS NULL THEN 1 ELSE 0 END)*40 + COALESCE(SUM(Hours), 0) <= 40) THEN 'No' ELSE '?' END AS overtime FROM Employee LEFT OUTER JOIN Works_On ON (SSN=ESSN) GROUP BY SSN;"
 
 # This call produces "fancy" formatted output.
 def process_query():
@@ -33,7 +33,7 @@ def print_result(r):
         title = titledict[r[3]]
     except:
         title = "?"
-    print('|{:^12d}|{:<10.10}|{:<12.12}|{:^9}|{:^15f}|{:<15.15}|{:12.12}|'.format( int(r[0]), str(r[1]), str(r[2]), r[3], r[4], str(r[6]), str(r[7])))
+    print('|{:^12d}|{:<10.10}|{:<12.12}|{:^9}|{:^15f}|{:<15.15}|{:12.12}|'.format( int(r[0]), str(r[1]), str(r[2]), r[3], r[4], str(r[5]), str(r[6])))
     #print('|{:.12}|'.format(r[1]))
 
     #print(" %s %s %s "%(r[0], r[1], r[2]))
