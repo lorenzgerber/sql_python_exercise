@@ -13,7 +13,8 @@ insert="INSERT INTO Works_On VALUES(?, ?, ?)"
 
 def check_input_args():
     if len(sys.argv) < 7:
-        sys.stderr.write('Usage: chghrs <DBNname> <UserID> <pwdarg> <SSN> <PNo> <Hours>\n')
+        sys.stderr.write("Usage: chghrs <DBNname> <UserID> <pwdarg> "
+                         "<SSN> <PNo> <Hours>\n")
         sys.exit()
     if sys.argv[6] == 'NULL':
         val = sys.argv[6]
@@ -21,10 +22,12 @@ def check_input_args():
         try:
            val = int(sys.argv[6])
         except ValueError:
-                  sys.stderr.write("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""\n")
+                  sys.stderr.write("Arguments <Hours> needs to be a "
+                                   "number between 0 and 40 or ""NULL""\n")
                   sys.exit()	  
         if (val < 0 or val > 40):
-            sys.stderr.write("Arguments <Hours> needs to be a number between 0 and 40 or ""NULL""\n")
+            sys.stderr.write("Arguments <Hours> needs to be a number "
+                             "between 0 and 40 or ""NULL""\n")
             sys.exit()
     
     try:
@@ -49,20 +52,25 @@ def execute_command(input, cursor1):
         try:
             success=cursor1.execute(delete, input['SSN'], input['PNo']).rowcount
         except (pyodbc.IntegrityError, pyodbc.Error) as e:
-            sys.stderr.write("Could not delete employee {} working on {} for {}Hrs\n".format(input['SSN'], input['PNo']))
+            sys.stderr.write("Could not delete working hour assignment of "
+                             "employee {} on project {}\n".format( input['SSN'], input['PNo']))
             sys.stderr.write("Giving following exception:  ")
             sys.stderr.write(str(e))
             sys.stderr.write("\n")
         if success != 1:
-            sys.stderr.write("Could not delete employee {} wroking on PNo {}\n".format(input['SSN'],input['PNo']))
+            sys.stderr.write("Could not delete working hours for employee {} "
+                             "on PNo {}\n".format(input['SSN'],input['PNo']))
             sys.exit()
         cursor1.commit()
-        sys.stderr.write("Employee {} working on {} was successfully deleted\n".format(input['SSN'], input['PNo']))
+        sys.stderr.write("Working hours for employee {} on project {} were successfully "
+                         "deleted\n".format(input['SSN'], input['PNo']))
     else:
         try:
             success=cursor1.execute(update, input['Hours'], input['SSN'], input['PNo']).rowcount
         except (pyodbc.IntegrityError, pyodbc.Error) as e:
-            sys.stderr.write("Could not execute update for employee {} working on {} for {}Hrs\n".format(input['SSN'], input['PNo'], input['Hours']))
+            sys.stderr.write("Could not execute update working hours for employee "
+                             "{} working on {} for {}Hrs\n".format(input['SSN'],
+                                                                   input['PNo'], input['Hours']))
             sys.stderr.write("Giving following exception:  ")
             sys.stderr.write(str(e))
             sys.stderr.write("\n")
@@ -70,33 +78,28 @@ def execute_command(input, cursor1):
             try:
                 successIn=cursor1.execute(insert, input['SSN'], input['PNo'], input['Hours']).rowcount
             except (pyodbc.IntegrityError, pyodbc.Error) as e:
-                sys.stderr.write("Could not execute insert for employee {} working on {} for {}Hrs\n".format(input['SSN'], input['PNo'], input['Hours']))
+                sys.stderr.write("Could not execute insert for employee "
+                                 "{} working on {} for {}Hrs\n".format(input['SSN'], input['PNo'], input['Hours']))
                 sys.stderr.write("Giving following exception:  ")
                 sys.stderr.write(str(e))
                 sys.stderr.write("\n")
                 sys.exit()
             if successIn != 1:
-                sys.stderr.write("Could not insert person {} wroking on PNo {} for {} hours\n".format(input['SSN'], input['PNo'], input['Hours']))
+                sys.stderr.write("Could not insert person {} working on "
+                                 "PNo {} for {} hours\n".format(input['SSN'], input['PNo'], input['Hours']))
                 sys.exit()
         cursor1.commit()
-        sys.stderr.write("Number of hours which employee {} works on project {} successfully changed to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
+        sys.stderr.write("Number of hours which employee {} works on project "
+                         "{} successfully changed to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
 
 input = check_input_args()
-#print("")
 
 connection1 = my_odbc_connect.establish_connection("cmdln")
-#print("")
 cursor1 = my_odbc_cursor.establish_cursor(connection1)
-#print("")
 
 execute_command(input, cursor1)
-#check_input_args();
 
-
-
-#print("")
 my_odbc_cursor.close_cursor(cursor1)
-#print("")
 my_odbc_connect.close_connection(connection1)
 
 
