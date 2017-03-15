@@ -66,31 +66,34 @@ def execute_command(input, cursor1):
                          "deleted\n".format(input['SSN'], input['PNo']))
     else:
         try:
-            success=cursor1.execute(update, input['Hours'], input['SSN'], input['PNo']).rowcount
-        except (pyodbc.IntegrityError, pyodbc.Error) as e:
-            sys.stderr.write("Could not execute update working hours for employee "
-                             "{} working on {} for {}Hrs\n".format(input['SSN'],
-                                                                   input['PNo'], input['Hours']))
-            sys.stderr.write("Giving following exception:  ")
-            sys.stderr.write(str(e))
-            sys.stderr.write("\n")
-        if success != 1:
-            try:
+            if input['Hours'] == 'NULL':
+                successIn=cursor1.execute(insert, input['SSN'], input['PNo'], None).rowcount
+            else:
                 successIn=cursor1.execute(insert, input['SSN'], input['PNo'], input['Hours']).rowcount
-            except (pyodbc.IntegrityError, pyodbc.Error) as e:
-                sys.stderr.write("Could not execute insert for employee "
-                                 "{} working on {} for {}Hrs\n".format(input['SSN'], input['PNo'], input['Hours']))
-                sys.stderr.write("Giving following exception:  ")
-                sys.stderr.write(str(e))
-                sys.stderr.write("\n")
-                sys.exit()
-            if successIn != 1:
-                sys.stderr.write("Could not insert person {} working on "
+            if successIn == 1:
+                cursor1.commit()
+                sys.stderr.write("Succesfully inserted person SSN {} working on "
                                  "PNo {} for {} hours\n".format(input['SSN'], input['PNo'], input['Hours']))
                 sys.exit()
+        except (pyodbc.IntegrityError, pyodbc.Error) as e_insert:
+            sys.stderr.write("...entry probably already exists will try update...\n")
+            e_str_insert = str(e_insert)
+        
+        try:
+            if input['Hours'] == 'NULL':
+                success=cursor1.execute(update, None, input['SSN'], input['PNo']).rowcount
+            else:
+                success=cursor1.execute(update, input['Hours'], input['SSN'], input['PNo']).rowcount
+        except (pyodbc.IntegrityError, pyodbc.Error) as e_update:
+            sys.stderr.write("Could not insert nor update working hours for employee "
+                             "{} working on {} for {}Hrs:\n".format(input['SSN'],
+                                                                   input['PNo'], input['Hours']))
+            sys.stderr.write(str(e_update) + "\n" + e_str_insert + "\n")
+            sys.exit()
+            
         cursor1.commit()
         sys.stderr.write("Number of hours which employee {} works on project "
-                         "{} successfully changed to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
+                         "{} successfully updated to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
 
 input = check_input_args()
 
