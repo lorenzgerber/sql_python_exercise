@@ -74,9 +74,8 @@ def execute_command(input, cursor1):
                 cursor1.commit()
                 sys.stderr.write("Succesfully inserted person SSN {} working on "
                                  "PNo {} for {} hours\n".format(input['SSN'], input['PNo'], input['Hours']))
-                sys.exit()
+                return;
         except (pyodbc.IntegrityError, pyodbc.Error) as e_insert:
-            sys.stderr.write("...entry probably already exists will try update...\n")
             e_str_insert = str(e_insert)
         
         try:
@@ -92,8 +91,11 @@ def execute_command(input, cursor1):
             sys.exit()
             
         cursor1.commit()
-        sys.stderr.write("Number of hours which employee {} works on project "
-                         "{} successfully updated to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
+        if(success == 1):
+            sys.stderr.write("Number of hours which employee {} works on project "
+                            "{} successfully updated to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
+        else:
+            sys.stderr.write("Could not update, value may already excist\n")
 
 input = check_input_args()
 
