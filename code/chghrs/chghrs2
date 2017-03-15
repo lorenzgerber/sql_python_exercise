@@ -72,19 +72,20 @@ def execute_command(input, cursor1):
                 sys.stderr.write("Succesfully inserted person SSN {} working on "
                                  "PNo {} for {} hours\n".format(input['SSN'], input['PNo'], input['Hours']))
                 sys.exit()
-        except (pyodbc.IntegrityError, pyodbc.Error) as e:
-            sys.stderr.write("Could not execute insert for employee "
-                                 "{} working on {} for {}Hrs:\n".format(input['SSN'], input['PNo'], input['Hours']))
-            sys.stderr.write(str(e))
-            sys.stderr.write("\n")
+        except (pyodbc.IntegrityError, pyodbc.Error) as e_insert:
+            sys.stderr.write("...entry probably already exists will try update...n")
+            #sys.stderr.write("Could not execute insert for employee "
+            #                    "{} working on {} for {}Hrs:\n".format(input['SSN'], input['PNo'], input['Hours']))
+            #sys.stderr.write(str(e))
+            #sys.stderr.write("\n")
         
         try:
             success=cursor1.execute(update, input['Hours'], input['SSN'], input['PNo']).rowcount
-        except (pyodbc.IntegrityError, pyodbc.Error) as e:
-            sys.stderr.write("Could not execute update working hours for employee "
+        except (pyodbc.IntegrityError, pyodbc.Error) as e_update:
+            sys.stderr.write("Could not insert nor update working hours for employee "
                              "{} working on {} for {}Hrs:\n".format(input['SSN'],
                                                                    input['PNo'], input['Hours']))
-            sys.stderr.write(str(e))
+            sys.stderr.write(str(e_update) + str(e_insert))
             sys.stderr.write("\n")
             sys.exit()
             
