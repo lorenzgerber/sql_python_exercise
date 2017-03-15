@@ -68,15 +68,16 @@ def execute_command(input, cursor1):
     else:
         try:
             successIn=cursor1.execute(insert, input['SSN'], input['PNo'], input['Hours']).rowcount
-            except (pyodbc.IntegrityError, pyodbc.Error) as e:
-                sys.stderr.write("Could not execute insert for employee "
-                                 "{} working on {} for {}Hrs:\n".format(input['SSN'], input['PNo'], input['Hours']))
-                sys.stderr.write(str(e))
-                sys.stderr.write("\n")
             if successIn == 1:
                 sys.stderr.write("Succesfully inserted person SSN {} working on "
                                  "PNo {} for {} hours\n".format(input['SSN'], input['PNo'], input['Hours']))
                 sys.exit()
+        except (pyodbc.IntegrityError, pyodbc.Error) as e:
+            sys.stderr.write("Could not execute insert for employee "
+                                 "{} working on {} for {}Hrs:\n".format(input['SSN'], input['PNo'], input['Hours']))
+            sys.stderr.write(str(e))
+            sys.stderr.write("\n")
+        
         try:
             success=cursor1.execute(update, input['Hours'], input['SSN'], input['PNo']).rowcount
         except (pyodbc.IntegrityError, pyodbc.Error) as e:
@@ -85,8 +86,8 @@ def execute_command(input, cursor1):
                                                                    input['PNo'], input['Hours']))
             sys.stderr.write(str(e))
             sys.stderr.write("\n")
+            sys.exit()
             
-                sys.exit()
         cursor1.commit()
         sys.stderr.write("Number of hours which employee {} works on project "
                          "{} successfully changed to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
