@@ -41,7 +41,7 @@ def print_result(r):
 
 print("")
 
-connection1 = my_odbc_connect.establish_connection("pwd")
+connection1 = my_odbc_connect.establish_connection("cmdln")
 print("")
 cursor1 = my_odbc_cursor.establish_cursor(connection1)
 print("")

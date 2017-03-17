@@ -16,16 +16,16 @@ def check_input_args():
         sys.stderr.write("Usage: chghrs <DBNname> <UserID> <pwdarg> "
                          "<SSN> <PNo> <Hours>\n")
         sys.exit()
-    if sys.argv[6] == 'NULL':
-        val = sys.argv[6]
+    if (sys.argv[6] == 'NULL' or sys.argv[6] == 'null'):
+        hrs = None
     else:
         try:
-           val = int(sys.argv[6])
+           hrs = int(sys.argv[6])
         except ValueError:
                   sys.stderr.write("Arguments <Hours> needs to be a "
                                    "number between 0 and 40 or ""NULL""\n")
                   sys.exit()	  
-        if (val < 0 or val > 40):
+        if (hrs < 0 or hrs > 40):
             sys.stderr.write("Arguments <Hours> needs to be a number "
                              "between 0 and 40 or ""NULL""\n")
             sys.exit()
@@ -43,7 +43,7 @@ def check_input_args():
             sys.exit()
             
     
-    input = {'SSN': SSN, 'PNo': PNo, 'Hours': val}
+    input = {'SSN': SSN, 'PNo': PNo, 'Hours': hrs}
 
     return input;
     
@@ -65,24 +65,22 @@ def execute_command(input, cursor1):
         sys.stderr.write("Working hours for employee {} on project {} were successfully "
                          "deleted\n".format(input['SSN'], input['PNo']))
     else:
+        successIn=0
+        e_str_insert=""
+        e_update=""
         try:
-            if input['Hours'] == 'NULL':
-                successIn=cursor1.execute(insert, input['SSN'], input['PNo'], None).rowcount
-            else:
-                successIn=cursor1.execute(insert, input['SSN'], input['PNo'], input['Hours']).rowcount
+            successIn=cursor1.execute(insert, input['SSN'], input['PNo'], input['Hours']).rowcount
             if successIn == 1:
                 cursor1.commit()
-                sys.stderr.write("Succesfully inserted person SSN {} working on "
+                sys.stderr.write("Succesfully inserted employee SSN {} working on "
                                  "PNo {} for {} hours\n".format(input['SSN'], input['PNo'], input['Hours']))
                 return;
-        except (pyodbc.IntegrityError, pyodbc.Error) as e_insert:
+        except (pyodbc.Error) as e_insert:
             e_str_insert = str(e_insert)
         
         try:
-            if input['Hours'] == 'NULL':
-                success=cursor1.execute(update, None, input['SSN'], input['PNo']).rowcount
-            else:
-                success=cursor1.execute(update, input['Hours'], input['SSN'], input['PNo']).rowcount
+            success=cursor1.execute(update, input['Hours'], input['SSN'], input['PNo']).rowcount
+            success=1
         except (pyodbc.IntegrityError, pyodbc.Error) as e_update:
             sys.stderr.write("Could not insert nor update working hours for employee "
                              "{} working on {} for {}Hrs:\n".format(input['SSN'],
@@ -94,6 +92,12 @@ def execute_command(input, cursor1):
         if(success == 1):
             sys.stderr.write("Number of hours which employee {} works on project "
                             "{} successfully updated to {}\n".format(input['SSN'], input['PNo'], input['Hours']))
+        elif (successIn != 1 and success != 1):
+            sys.stderr.write("Could not insert nor update working hours for employee "
+                             "{} working on {} for {}Hrs:\n".format(input['SSN'],
+                                                                   input['PNo'], input['Hours']))
+            sys.stderr.write(str(e_update) + "\n" + e_str_insert + "\n")
+            sys.exit()
         else:
             sys.stderr.write("Could not update, value may already excist\n")
 
