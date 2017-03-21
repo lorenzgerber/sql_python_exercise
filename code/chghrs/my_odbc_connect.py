@@ -46,20 +46,18 @@ def establish_connection(mode,other="",autocommit=""):
         if 'odbc_pwd' in locals():
                 argstring=argstring+";PWD="+odbc_pwd
         argstring=argstring+additional
-        #print("argument string = %s" % argstring)
         try:
                 if autocommit in ["True", "Yes"]:
                         c = pyodbc.connect(argstring,autocommit=True)
                 else:
                         c= pyodbc.connect(argstring)
         except:
-                print("ODBC connection failed*.")
+                print("ODBC connection failed*.  %s" % argstring)
+                sys.exit()
         else:
-                #print("ODBC connection: %s established." % c)
                 return c
     
 # Close the connection.    
 def close_connection(c):
     c.close()
-    #print("Closing the connection.")
 
