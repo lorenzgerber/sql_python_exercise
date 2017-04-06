@@ -20,7 +20,7 @@ def check_input_args():
         hrs = None
     else:
         try:
-           hrs = float(sys.argv[6])
+           hrs = round(float(sys.argv[6]),1)
         except ValueError:
                   sys.stderr.write("Arguments <Hours> needs to be a "
                                    "number between 0 and 40 or ""NULL""\n")
