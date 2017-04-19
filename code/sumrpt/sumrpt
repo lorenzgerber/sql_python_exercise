@@ -7,10 +7,7 @@ import sys
 import my_odbc_connect
 import my_odbc_cursor
 
-
-query_old = "SELECT SSN, LName, FName, MInit, COALESCE(SUM(Hours),0) AS Know_Hours FROM Employee LEFT OUTER JOIN Works_On ON (SSN=ESSN) GROUP BY SSN"
-
-query = "SELECT SSN, LName, FName, MInit, COALESCE(SUM(Hours),0) AS Known_Hours, CASE WHEN SUM(CASE WHEN Hours IS NULL THEN 1 ELSE 0 END) > 0 THEN 'Yes' ELSE 'No' END AS unknown_hours, CASE WHEN(SUM(Hours) > 40) THEN 'Yes' WHEN(SUM(CASE WHEN Hours IS NULL THEN 1 ELSE 0 END)*40 + COALESCE(SUM(Hours), 0) <= 40) THEN 'No' ELSE '?' END AS overtime FROM Employee LEFT OUTER JOIN Works_On ON (SSN=ESSN) GROUP BY SSN;"
+query = "SELECT SSN, LName, FName, MInit, COALESCE(SUM(Hours),0) AS Known_Hours, COALESCE(SUM(pno),0), CASE WHEN SUM(CASE WHEN Hours IS NULL AND pno > 0 THEN 1 ELSE 0 END) > 0 THEN 'Yes' ELSE 'No' END AS unknown_hours, CASE WHEN(SUM(Hours) > 40) THEN 'Yes' WHEN(SUM(CASE WHEN Hours IS NULL THEN 1 ELSE 0 END)*40 + COALESCE(SUM(Hours), 0) <= 40) THEN 'No' ELSE '?' END AS overtime FROM Employee LEFT OUTER JOIN Works_On ON (SSN=ESSN) GROUP BY SSN;"
 
 # This call produces "fancy" formatted output.
 def process_query():
